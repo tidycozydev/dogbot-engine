@@ -1,4 +1,4 @@
-package dev.tidycozy.dogbotengine;
+package dev.tidycozy.dogbotengine.conf;
 
 import org.springframework.context.annotation.Configuration;
 

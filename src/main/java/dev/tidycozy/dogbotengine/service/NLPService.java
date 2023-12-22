@@ -1,4 +1,4 @@
-package dev.tidycozy.dogbotengine;
+package dev.tidycozy.dogbotengine.service;
 
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
