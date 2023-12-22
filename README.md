@@ -4,6 +4,7 @@ Beginning of what should become the engine for my talking bot, Dogbot, from my V
 Right now, just very basic code to test OpenNLP and try to figure it out.
 
 ## Libraries
+- Spring Boot
 - Apache OpenNLP
 
 ## Models sources
