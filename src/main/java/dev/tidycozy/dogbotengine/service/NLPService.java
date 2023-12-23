@@ -1,5 +1,6 @@
 package dev.tidycozy.dogbotengine.service;
 
+import dev.tidycozy.dogbotengine.model.Punctuation;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -75,29 +76,30 @@ public class NLPService {
     }
 
     public String getDogbotAnswer(String phrase) {
-        String[] sentences = detectSentences(phrase);
+        String[] sentences = sentenceDetectorME.sentDetect(phrase);
+
         for (String sentence : sentences) {
-            System.out.println("Sentence: " + sentence);
-            String[] tokens = tokenizeSentence(sentence);
-            System.out.println("Tokens: " + String.join(", ", tokens));
-            String[] tags = tagTokens(tokens);
-            System.out.println("Tags: " + String.join(", ", tags));
+            String[] tokens = tokenizerME.tokenize(sentence);
+            String[] tags = posTaggerME.tag(tokens);
             String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tags);
-            System.out.println("Lemmas: " + String.join(", ", lemmas));
+            debug(sentence, tokens, tags, lemmas);
+
+            // We can try the ponctuation
+            if (".".equals(tags[tags.length - 1])) {
+                Punctuation punctuation =
+                        Punctuation.getFromCharacter(tokens[tokens.length - 1]);
+                System.out.println("Punctuation: " + punctuation);
+            }
         }
+
         return "I'm dogbot!";
     }
 
-    private String[] detectSentences(String phrase) {
-        return sentenceDetectorME.sentDetect(phrase);
-    }
-
-    private String[] tokenizeSentence(String sentence) {
-        return tokenizerME.tokenize(sentence);
-    }
-
-    private String[] tagTokens(String[] tokens) {
-        return posTaggerME.tag(tokens);
+    private void debug(String sentence, String[] tokens, String[] tags, String[] lemmas) {
+        System.out.println("Sentence: " + sentence);
+        System.out.println("Tokens: " + String.join(", ", tokens));
+        System.out.println("Tags: " + String.join(", ", tags));
+        System.out.println("Lemmas: " + String.join(", ", lemmas));
     }
 
 }

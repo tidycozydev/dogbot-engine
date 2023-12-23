@@ -1,6 +1,5 @@
 package dev.tidycozy.dogbotengine.controller;
 
-import dev.tidycozy.dogbotengine.model.DogbotRequest;
 import dev.tidycozy.dogbotengine.service.NLPService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,4 +1,4 @@
-package dev.tidycozy.dogbotengine.model;
+package dev.tidycozy.dogbotengine.controller;
 
 public class DogbotRequest {
 
