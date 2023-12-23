@@ -12,7 +12,7 @@ public class Subject {
     public static Subject UNKNOW_SUBJECT = new Subject("Unknown subject");
     public static Subject NO_SUBJECT = new Subject("No subject"); // Used in NLPService
 
-    private String name;
+    private final String name;
 
     public Subject(String name) {
         this.name = name;

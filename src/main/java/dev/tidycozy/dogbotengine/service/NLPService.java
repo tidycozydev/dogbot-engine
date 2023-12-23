@@ -100,11 +100,7 @@ public class NLPService {
             String[] tagsForLemmas = posTaggerMEForLemmatizer.tag(tokens);
             String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tagsForLemmas);
 
-            // We test punctuation, default will be UNKNOWN
-            Punctuation punctuation =
-                    ".".equals(tagsForLemmas[tagsForLemmas.length - 1]) ?
-                            Punctuation.getFromString(tokens[tokens.length - 1]) :
-                            Punctuation.UNKNOWN;
+            Punctuation punctuation = findPunctuation(tokens, tags);
 
             List<Subject> subjects = findSubjects(tokens, tags, tagsForLemmas);
 
@@ -112,6 +108,12 @@ public class NLPService {
         }
 
         return "I'm dogbot!";
+    }
+
+    private Punctuation findPunctuation(String[] tokens, String[] tags) {
+        return "PUNCT".equals(tags[tags.length - 1]) ?
+                Punctuation.getFromString(tokens[tokens.length - 1]) :
+                Punctuation.UNKNOWN;  // Default will be UNKNOWN
     }
 
     private List<Subject> findSubjects(String[] tokens, String[] tags, String[] tagsForLemmas) {
@@ -127,7 +129,7 @@ public class NLPService {
             }
         }
         if (subjectList.isEmpty()) {
-            subjectList.add(Subject.NO_SUBJECT);
+            subjectList.add(Subject.NO_SUBJECT); // Default will be NO_SUBJECT
         }
         return subjectList;
     }
