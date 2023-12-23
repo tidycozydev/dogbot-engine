@@ -2,6 +2,8 @@ package dev.tidycozy.dogbotengine.service;
 
 import dev.tidycozy.dogbotengine.model.Punctuation;
 import dev.tidycozy.dogbotengine.model.Subject;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -9,6 +11,7 @@ import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.Span;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,15 +22,17 @@ import java.util.List;
 @Service
 public class NLPService {
 
-    SentenceDetectorME sentenceDetectorME;
+    private SentenceDetectorME sentenceDetectorME;
 
-    TokenizerME tokenizerME;
+    private TokenizerME tokenizerME;
 
-    POSTaggerME posTaggerME;
+    private POSTaggerME posTaggerME;
 
-    POSTaggerME posTaggerMEForLemmatizer;
+    private POSTaggerME posTaggerMEForLemmatizer;
 
-    DictionaryLemmatizer dictionaryLemmatizer;
+    private DictionaryLemmatizer dictionaryLemmatizer;
+
+    private ChunkerME chunkerME;
 
     public NLPService() {
         initSentenceDetectorME();
@@ -35,6 +40,7 @@ public class NLPService {
         initPOSTaggerME();
         initPOSTaggerMEForLemmatizer();
         initDictionaryLemmatizer();
+        initChunkerME();
     }
 
     private void initSentenceDetectorME() {
@@ -44,7 +50,7 @@ public class NLPService {
             SentenceModel model = new SentenceModel(inputStream);
             sentenceDetectorME = new SentenceDetectorME(model);
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -55,7 +61,7 @@ public class NLPService {
             TokenizerModel model = new TokenizerModel(inputStream);
             tokenizerME = new TokenizerME(model);
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -66,7 +72,7 @@ public class NLPService {
             POSModel posModel = new POSModel(inputStream);
             posTaggerME = new POSTaggerME(posModel);
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -77,7 +83,7 @@ public class NLPService {
             POSModel posModel = new POSModel(inputStream);
             posTaggerMEForLemmatizer = new POSTaggerME(posModel);
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -87,7 +93,18 @@ public class NLPService {
                     getClass().getResourceAsStream("/models/en-lemmatizer.dict");
             dictionaryLemmatizer = new DictionaryLemmatizer(inputStream);
         } catch (IOException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void initChunkerME() {
+        try {
+            InputStream inputStream =
+                    getClass().getResourceAsStream("/models/en-chunker.bin");
+            ChunkerModel chunkerModel = new ChunkerModel(inputStream);
+            chunkerME = new ChunkerME(chunkerModel);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -99,15 +116,31 @@ public class NLPService {
             String[] tags = posTaggerME.tag(tokens);
             String[] tagsForLemmas = posTaggerMEForLemmatizer.tag(tokens);
             String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tagsForLemmas);
+            String[] chunks = chunkerME.chunk(tokens, tagsForLemmas);
+            String[] chunksAsText = findChunksAsText(tokens, tagsForLemmas);
 
             Punctuation punctuation = findPunctuation(tokens, tags);
 
             List<Subject> subjects = findSubjects(tokens, tags, tagsForLemmas);
 
-            debug(sentence, tokens, tags, tagsForLemmas, lemmas, punctuation, subjects);
+            debug(sentence, tokens, tags, tagsForLemmas, lemmas, chunks, chunksAsText, punctuation, subjects);
         }
 
         return "I'm dogbot!";
+    }
+
+    private String[] findChunksAsText(String[] tokens, String[] tags) {
+        Span[] spans = chunkerME.chunkAsSpans(tokens, tags);
+        String[] chunksAsText = new String[spans.length];
+        int index = 0;
+        for (Span span : spans) {
+            String chunkAsText = "";
+            for (int i = span.getStart(); i < span.getEnd(); i++) {
+                chunkAsText = chunkAsText.concat(tokens[i] + " ");
+            }
+            chunksAsText[index++] = chunkAsText.trim();
+        }
+        return chunksAsText;
     }
 
     private Punctuation findPunctuation(String[] tokens, String[] tags) {
@@ -139,6 +172,8 @@ public class NLPService {
                        String[] tags,
                        String[] tagsForLemmas,
                        String[] lemmas,
+                       String[] chunks,
+                       String[] chunksAsText,
                        Punctuation punctuation,
                        List<Subject> subjects) {
         System.out.println("---SENTENCE: " + sentence);
@@ -146,6 +181,8 @@ public class NLPService {
         System.out.println("-------TAGS: " + String.join(", ", tags));
         System.out.println("TAGS4LEMMAS: " + String.join(", ", tagsForLemmas));
         System.out.println("-----LEMMAS: " + String.join(", ", lemmas));
+        System.out.println("-----CHUNKS: " + String.join(", ", chunks));
+        System.out.println("CHUNKSASTXT: " + String.join(", ", chunksAsText));
         System.out.println("PUNCTUATION: " + punctuation);
 
         String subjectsAsString = "";
