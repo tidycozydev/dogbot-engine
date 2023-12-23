@@ -1,6 +1,7 @@
 package dev.tidycozy.dogbotengine.service;
 
 import dev.tidycozy.dogbotengine.model.Punctuation;
+import dev.tidycozy.dogbotengine.model.Subject;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class NLPService {
@@ -22,12 +25,15 @@ public class NLPService {
 
     POSTaggerME posTaggerME;
 
+    POSTaggerME posTaggerMEForLemmatizer;
+
     DictionaryLemmatizer dictionaryLemmatizer;
 
     public NLPService() {
         initSentenceDetectorME();
         initTokenizerME();
         initPOSTaggerME();
+        initPOSTaggerMEForLemmatizer();
         initDictionaryLemmatizer();
     }
 
@@ -56,10 +62,20 @@ public class NLPService {
     private void initPOSTaggerME() {
         try {
             InputStream inputStream =
-//                    getClass().getResourceAsStream("/models/opennlp-en-ud-ewt-pos-1.0-1.9.3.bin");
-                    getClass().getResourceAsStream("/models/en-pos-maxent.bin");
+                    getClass().getResourceAsStream("/models/opennlp-en-ud-ewt-pos-1.0-1.9.3.bin");
             POSModel posModel = new POSModel(inputStream);
             posTaggerME = new POSTaggerME(posModel);
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+    private void initPOSTaggerMEForLemmatizer() {
+        try {
+            InputStream inputStream =
+                    getClass().getResourceAsStream("/models/en-pos-maxent.bin");
+            POSModel posModel = new POSModel(inputStream);
+            posTaggerMEForLemmatizer = new POSTaggerME(posModel);
         } catch (IOException e) {
             System.out.println(e);
         }
@@ -81,26 +97,69 @@ public class NLPService {
         for (String sentence : sentences) {
             String[] tokens = tokenizerME.tokenize(sentence);
             String[] tags = posTaggerME.tag(tokens);
-            String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tags);
-            debug(sentence, tokens, tags, lemmas);
+            String[] tagsForLemmas = posTaggerMEForLemmatizer.tag(tokens);
+            String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tagsForLemmas);
 
             // We test punctuation, default will be UNKNOWN
             Punctuation punctuation =
-                    ".".equals(tags[tags.length - 1]) ?
-                            Punctuation.getFromCharacter(tokens[tokens.length - 1]) :
+                    ".".equals(tagsForLemmas[tagsForLemmas.length - 1]) ?
+                            Punctuation.getFromString(tokens[tokens.length - 1]) :
                             Punctuation.UNKNOWN;
 
-            System.out.println("Punctuation: " + punctuation);
+            List<Subject> subjects = findSubjects(tokens, tags, tagsForLemmas);
+
+            debug(sentence, tokens, tags, tagsForLemmas, lemmas, punctuation, subjects);
         }
 
         return "I'm dogbot!";
     }
 
-    private void debug(String sentence, String[] tokens, String[] tags, String[] lemmas) {
-        System.out.println("Sentence: " + sentence);
-        System.out.println("Tokens: " + String.join(", ", tokens));
-        System.out.println("Tags: " + String.join(", ", tags));
-        System.out.println("Lemmas: " + String.join(", ", lemmas));
+    private List<Subject> findSubjects(String[] tokens, String[] tags, String[] tagsForLemmas) {
+        List<Subject> subjectList = new ArrayList<>();
+        for (int i = 0; i < tagsForLemmas.length; i++) {
+            // Subject pronouns
+            if (tagsForLemmas[i].equals("PRP")) {
+                subjectList.add(Subject.getFromString(tokens[i]));
+            }
+            // People
+            if (tagsForLemmas[i].equals("NNP") && tags[i].equals("PROPN")) {
+                subjectList.add(new Subject(tokens[i]));
+            }
+        }
+        if (subjectList.isEmpty()) {
+            subjectList.add(Subject.NO_SUBJECT);
+        }
+        return subjectList;
+    }
+
+    private void debug(String sentence,
+                       String[] tokens,
+                       String[] tags,
+                       String[] tagsForLemmas,
+                       String[] lemmas,
+                       Punctuation punctuation,
+                       List<Subject> subjects) {
+        System.out.println("---SENTENCE: " + sentence);
+        System.out.println("-----TOKENS: " + String.join(", ", tokens));
+        System.out.println("-------TAGS: " + String.join(", ", tags));
+        System.out.println("TAGS4LEMMAS: " + String.join(", ", tagsForLemmas));
+        System.out.println("-----LEMMAS: " + String.join(", ", lemmas));
+        System.out.println("PUNCTUATION: " + punctuation);
+
+        String subjectsAsString = "";
+        if (!subjects.isEmpty()) {
+            subjectsAsString = subjectsAsString.concat(subjects.get(0).getName());
+            if (subjects.size() > 1) {
+                for (int i = 1; i < subjects.size(); i++) {
+                    subjectsAsString = subjectsAsString.concat(", " + subjects.get(i).getName());
+                }
+            }
+        }
+        if (!subjectsAsString.isEmpty()) {
+            System.out.println("---SUBJECTS: " + subjectsAsString);
+        }
+
+        System.out.println("##########################################################");
     }
 
 }

@@ -10,8 +10,8 @@ public enum Punctuation {
 
     UNKNOWN;
 
-    public static Punctuation getFromCharacter(String character) {
-        return switch (character) {
+    public static Punctuation getFromString(String string) {
+        return switch (string) {
             case "." -> STATEMENT;
             case "?" -> QUESTION;
             case "!" -> EXCLAMATION;
