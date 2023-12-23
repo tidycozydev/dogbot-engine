@@ -84,12 +84,13 @@ public class NLPService {
             String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tags);
             debug(sentence, tokens, tags, lemmas);
 
-            // We can try the ponctuation
-            if (".".equals(tags[tags.length - 1])) {
-                Punctuation punctuation =
-                        Punctuation.getFromCharacter(tokens[tokens.length - 1]);
-                System.out.println("Punctuation: " + punctuation);
-            }
+            // We test punctuation, default will be UNKNOWN
+            Punctuation punctuation =
+                    ".".equals(tags[tags.length - 1]) ?
+                            Punctuation.getFromCharacter(tokens[tokens.length - 1]) :
+                            Punctuation.UNKNOWN;
+
+            System.out.println("Punctuation: " + punctuation);
         }
 
         return "I'm dogbot!";
