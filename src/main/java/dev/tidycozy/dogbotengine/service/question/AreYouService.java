@@ -1,13 +1,13 @@
-package dev.tidycozy.dogbotengine.service;
+package dev.tidycozy.dogbotengine.service.question;
 
 import dev.tidycozy.dogbotengine.model.PhraseContext;
+import dev.tidycozy.dogbotengine.service.AnswerService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StatementService implements AnswerService {
-
+public class AreYouService implements AnswerService {
     @Override
     public String computeAnswer(PhraseContext context) {
-        return "You made a statement about: ";
+        return null;
     }
 }

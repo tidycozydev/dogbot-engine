@@ -9,9 +9,7 @@ public enum QuestionType {
 
     ARE_YOU("about if I am"),
     CAN_YOU("about if I can"),
-    DO_YOU_KNOW("about if I know"),
-    DO_YOU_LIKE("about if I like"),
-    DO_YOU_THINK("about if I think"),
+    DO_YOU("about if I do"),
     HAVE_YOU("about if I have"),
     IS_THERE("about presence"),
     SHOULD_I("about choice"),
@@ -41,9 +39,7 @@ public enum QuestionType {
         // Global testing on sentence
         checkQuestionType(context, questionTypes, ARE_YOU, "are", "you");
         checkQuestionType(context, questionTypes, CAN_YOU, "can", "you");
-        checkQuestionType(context, questionTypes, DO_YOU_KNOW, "do", "you", "know");
-        checkQuestionType(context, questionTypes, DO_YOU_LIKE, "do", "you", "like");
-        checkQuestionType(context, questionTypes, DO_YOU_THINK, "do", "you", "think");
+        checkQuestionType(context, questionTypes, DO_YOU, "do", "you");
         checkQuestionType(context, questionTypes, HAVE_YOU, "have", "you");
         checkQuestionType(context, questionTypes, IS_THERE, "is", "there");
         checkQuestionType(context, questionTypes, SHOULD_I, "should", "i");

@@ -3,6 +3,8 @@ package dev.tidycozy.dogbotengine.service;
 import dev.tidycozy.dogbotengine.model.Punctuation;
 import dev.tidycozy.dogbotengine.model.PhraseContext;
 import dev.tidycozy.dogbotengine.model.Subject;
+import dev.tidycozy.dogbotengine.service.question.QuestionService;
+import dev.tidycozy.dogbotengine.service.statement.StatementService;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
