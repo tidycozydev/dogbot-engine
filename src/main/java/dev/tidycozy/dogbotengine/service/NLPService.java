@@ -1,6 +1,7 @@
 package dev.tidycozy.dogbotengine.service;
 
 import dev.tidycozy.dogbotengine.model.Punctuation;
+import dev.tidycozy.dogbotengine.model.PhraseContext;
 import dev.tidycozy.dogbotengine.model.Subject;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -22,6 +23,10 @@ import java.util.List;
 @Service
 public class NLPService {
 
+    private QuestionService questionService;
+
+    private StatementService statementService;
+
     private SentenceDetectorME sentenceDetectorME;
 
     private TokenizerME tokenizerME;
@@ -34,7 +39,10 @@ public class NLPService {
 
     private ChunkerME chunkerME;
 
-    public NLPService() {
+    public NLPService(QuestionService questionService, StatementService statementService) {
+        this.questionService = questionService;
+        this.statementService = statementService;
+
         initSentenceDetectorME();
         initTokenizerME();
         initPOSTaggerME();
@@ -108,11 +116,11 @@ public class NLPService {
         }
     }
 
-    public String getDogbotAnswer(String phrase) {
-        String[] sentences = sentenceDetectorME.sentDetect(phrase);
+    public String getDogbotAnswer(String request) {
+        String[] phrases = sentenceDetectorME.sentDetect(request);
 
-        for (String sentence : sentences) {
-            String[] tokens = tokenizerME.tokenize(sentence);
+        for (String phrase : phrases) {
+            String[] tokens = tokenizerME.tokenize(phrase);
             String[] tags = posTaggerME.tag(tokens);
             String[] tagsForLemmas = posTaggerMEForLemmatizer.tag(tokens);
             String[] lemmas = dictionaryLemmatizer.lemmatize(tokens, tagsForLemmas);
@@ -123,7 +131,11 @@ public class NLPService {
 
             List<Subject> subjects = findSubjects(tokens, tags, tagsForLemmas);
 
-            debug(sentence, tokens, tags, tagsForLemmas, lemmas, chunks, chunksAsText, punctuation, subjects);
+            System.out.println(
+                    getDogbotAnswerBySentence(new PhraseContext(phrase, tokens, tags, tagsForLemmas, punctuation, subjects)));
+
+            // Big print to see what's going on with OpenMLP
+            debug(phrase, tokens, tags, tagsForLemmas, lemmas, chunks, chunksAsText, punctuation, subjects);
         }
 
         return "I'm dogbot!";
@@ -153,8 +165,10 @@ public class NLPService {
         List<Subject> subjectList = new ArrayList<>();
         for (int i = 0; i < tagsForLemmas.length; i++) {
             // Subject pronouns
-            if (tagsForLemmas[i].equals("PRP")) {
+            if (tagsForLemmas[i].equals("PRP") ||
+                    (tagsForLemmas[i].equals("NN") && tags[i].equals("PRON"))) {
                 subjectList.add(Subject.getFromString(tokens[i]));
+                continue;
             }
             // People
             if (tagsForLemmas[i].equals("NNP") && tags[i].equals("PROPN")) {
@@ -165,6 +179,14 @@ public class NLPService {
             subjectList.add(Subject.NO_SUBJECT); // Default will be NO_SUBJECT
         }
         return subjectList;
+    }
+
+    private String getDogbotAnswerBySentence(PhraseContext phraseContext) {
+        if (phraseContext.getPunctuation().equals(Punctuation.QUESTION)) {
+            return questionService.computeAnswer(phraseContext);
+        }
+
+        return statementService.computeAnswer(phraseContext);
     }
 
     private void debug(String sentence,
@@ -187,10 +209,10 @@ public class NLPService {
 
         String subjectsAsString = "";
         if (!subjects.isEmpty()) {
-            subjectsAsString = subjectsAsString.concat(subjects.get(0).getName());
+            subjectsAsString = subjectsAsString.concat(subjects.get(0).name());
             if (subjects.size() > 1) {
                 for (int i = 1; i < subjects.size(); i++) {
-                    subjectsAsString = subjectsAsString.concat(", " + subjects.get(i).getName());
+                    subjectsAsString = subjectsAsString.concat(", " + subjects.get(i).name());
                 }
             }
         }
