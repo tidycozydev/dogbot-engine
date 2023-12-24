@@ -15,17 +15,17 @@ public class QuestionService implements AnswerService {
         }
         analysis = analysis.concat("More specificaly about:");
         for (int i = 0; i < context.getTokens().length; i++) {
-            if ("A".equals(context.getWorkingTokens()[i])) {
+            if (PhraseContext.TOKEN_AVAILABLE.equals(context.getWorkingTokens()[i])) {
                 if (context.getTags()[i].equals("NOUN")) {
                     if (i != 0 && context.getTags()[i - 1].equals("PRON")) {
                         analysis = analysis.concat(" " + context.getTokens()[i - 1]);
-                        context.getWorkingTokens()[i] = "X";
+                        context.getWorkingTokens()[i] = PhraseContext.TOKEN_USED;
                     }
                     analysis = analysis.concat(" " + context.getTokens()[i]);
-                    context.getWorkingTokens()[i] = "X";
+                    context.getWorkingTokens()[i] = PhraseContext.TOKEN_USED;
                 } else if (context.getTags()[i].equals("VERB") || context.getTags()[i].equals("ADJ")) {
                     analysis = analysis.concat(" " + context.getTokens()[i]);
-                    context.getWorkingTokens()[i] = "X";
+                    context.getWorkingTokens()[i] = PhraseContext.TOKEN_USED;
                 }
             }
         }

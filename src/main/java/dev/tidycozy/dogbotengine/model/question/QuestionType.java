@@ -81,7 +81,8 @@ public enum QuestionType {
         for (int i = 0; i < tokens.length; i++) {
 
             // If the first part is a match, we check if the following parts are right after
-            if (tokens[i].toLowerCase().contains(firstPart) && "A".equals(workingTokens[i])) {
+            if (tokens[i].toLowerCase().contains(firstPart)
+                    && PhraseContext.TOKEN_AVAILABLE.equals(workingTokens[i])) {
                 boolean questionMatched = true;
 
                 // Avoid IndexOutOfBounds on tokens
@@ -90,7 +91,7 @@ public enum QuestionType {
                     for (int j = 1; j < questionParts.length; j++) {
                         // The next token is not the good one, or it has already been used (working token already checked)
                         if (!tokens[i + subIteration].toLowerCase().contains(questionParts[j])
-                                || !"A".equals(workingTokens[i])) {
+                                || PhraseContext.TOKEN_USED.equals(workingTokens[i])) {
                             questionMatched = false;
                             break;
                         }
@@ -104,7 +105,7 @@ public enum QuestionType {
                 if (questionMatched) {
                     // We update the workings tokens to mark them as already used
                     for (int j = i; j < i + questionParts.length; j++) {
-                        workingTokens[j] = "X";
+                        workingTokens[j] = PhraseContext.TOKEN_USED;
                     }
 
                     // We add the question type

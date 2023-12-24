@@ -19,6 +19,9 @@ public class PhraseContext {
 
     private final List<Subject> subjects;
 
+    public static final String TOKEN_AVAILABLE = "A";
+    public static final String TOKEN_USED = "X";
+
     public PhraseContext(String sentence, String[] tokens, String[] tags, String[] tagsForLemmas, Punctuation punctuation, List<Subject> subjects) {
         this.sentence = sentence;
         this.tokens = tokens;
