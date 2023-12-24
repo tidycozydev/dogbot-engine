@@ -19,7 +19,7 @@ public class QuestionService implements AnswerService {
                 if (context.getTags()[i].equals("NOUN")) {
                     if (i != 0 && context.getTags()[i - 1].equals("PRON")) {
                         analysis = analysis.concat(" " + context.getTokens()[i - 1]);
-                        context.getWorkingTokens()[i] = PhraseContext.TOKEN_USED;
+                        context.getWorkingTokens()[i - 1] = PhraseContext.TOKEN_USED;
                     }
                     analysis = analysis.concat(" " + context.getTokens()[i]);
                     context.getWorkingTokens()[i] = PhraseContext.TOKEN_USED;
