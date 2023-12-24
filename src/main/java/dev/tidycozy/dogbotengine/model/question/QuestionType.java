@@ -12,6 +12,7 @@ public enum QuestionType {
     DO_YOU_KNOW("about if I know"),
     DO_YOU_LIKE("about if I like"),
     DO_YOU_THINK("about if I think"),
+    HAVE_YOU("about if I have"),
     IS_THERE("about presence"),
     SHOULD_I("about choice"),
     WHO("about someone"),
@@ -43,6 +44,7 @@ public enum QuestionType {
         checkQuestionType(context, questionTypes, DO_YOU_KNOW, "do", "you", "know");
         checkQuestionType(context, questionTypes, DO_YOU_LIKE, "do", "you", "like");
         checkQuestionType(context, questionTypes, DO_YOU_THINK, "do", "you", "think");
+        checkQuestionType(context, questionTypes, HAVE_YOU, "have", "you");
         checkQuestionType(context, questionTypes, IS_THERE, "is", "there");
         checkQuestionType(context, questionTypes, SHOULD_I, "should", "i");
 
