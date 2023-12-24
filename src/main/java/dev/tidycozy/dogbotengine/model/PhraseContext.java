@@ -15,22 +15,20 @@ public class PhraseContext {
 
     private final String[] tagsForLemmas;
 
-    private final Punctuation punctuation;
+    private Punctuation punctuation;
 
-    private final List<Subject> subjects;
+    private List<Subject> subjects;
 
     public static final String TOKEN_AVAILABLE = "A";
     public static final String TOKEN_USED = "X";
 
-    public PhraseContext(String sentence, String[] tokens, String[] tags, String[] tagsForLemmas, Punctuation punctuation, List<Subject> subjects) {
+    public PhraseContext(String sentence, String[] tokens, String[] tags, String[] tagsForLemmas) {
         this.sentence = sentence;
         this.tokens = tokens;
         this.workingTokens = new String[tokens.length];
-        Arrays.fill(workingTokens, "A"); // A for available
+        Arrays.fill(workingTokens, TOKEN_AVAILABLE);
         this.tags = tags;
         this.tagsForLemmas = tagsForLemmas;
-        this.punctuation = punctuation;
-        this.subjects = subjects;
     }
 
     public String getSentence() {
@@ -57,7 +55,15 @@ public class PhraseContext {
         return punctuation;
     }
 
+    public void setPunctuation(Punctuation punctuation) {
+        this.punctuation = punctuation;
+    }
+
     public List<Subject> getSubjects() {
         return subjects;
+    }
+
+    public void setSubjects(List<Subject> subjects) {
+        this.subjects = subjects;
     }
 }

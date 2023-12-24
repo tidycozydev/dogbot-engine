@@ -13,6 +13,7 @@ public enum QuestionType {
     DO_YOU_LIKE("about if I like"),
     DO_YOU_THINK("about if I think"),
     IS_THERE("about presence"),
+    SHOULD_I("about choice"),
     WHO("about someone"),
     WHAT("about something"),
     WHERE("about a place"),
@@ -43,6 +44,7 @@ public enum QuestionType {
         checkQuestionType(context, questionTypes, DO_YOU_LIKE, "do", "you", "like");
         checkQuestionType(context, questionTypes, DO_YOU_THINK, "do", "you", "think");
         checkQuestionType(context, questionTypes, IS_THERE, "is", "there");
+        checkQuestionType(context, questionTypes, SHOULD_I, "should", "i");
 
         for (int i = 0; i < context.getTags().length; i++) {
             String tag = context.getTags()[i];
@@ -61,7 +63,7 @@ public enum QuestionType {
             }
         }
 
-        // Unkown question type
+        // Unknown question type
         if (questionTypes.isEmpty()) {
             questionTypes.add(UNKNOWN);
         }

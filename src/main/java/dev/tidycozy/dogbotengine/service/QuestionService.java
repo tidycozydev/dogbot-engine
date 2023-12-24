@@ -4,15 +4,20 @@ import dev.tidycozy.dogbotengine.model.PhraseContext;
 import dev.tidycozy.dogbotengine.model.question.QuestionType;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class QuestionService implements AnswerService {
 
     @Override
     public String computeAnswer(PhraseContext context) {
         String analysis = "";
-        for (QuestionType questionType : QuestionType.getQuestionTypes(context)) {
+
+        List<QuestionType> questionTypes = QuestionType.getQuestionTypes(context);
+        for (QuestionType questionType : questionTypes) {
             analysis = analysis.concat("You asked a question " + questionType.getDefinition() + "\n");
         }
+
         analysis = analysis.concat("More specificaly about:");
         for (int i = 0; i < context.getTokens().length; i++) {
             if (PhraseContext.TOKEN_AVAILABLE.equals(context.getWorkingTokens()[i])) {
@@ -29,7 +34,9 @@ public class QuestionService implements AnswerService {
                 }
             }
         }
+
         analysis = analysis.concat("\nWorking tokens: " + String.join(", ", context.getWorkingTokens()) + "\n");
         return analysis;
     }
+
 }

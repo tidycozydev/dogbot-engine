@@ -127,15 +127,17 @@ public class NLPService {
             String[] chunks = chunkerME.chunk(tokens, tagsForLemmas);
             String[] chunksAsText = findChunksAsText(tokens, tagsForLemmas);
 
-            Punctuation punctuation = findPunctuation(tokens, tags);
+            PhraseContext phraseContext = new PhraseContext(phrase, tokens, tags, tagsForLemmas);
 
-            List<Subject> subjects = findSubjects(tokens, tags, tagsForLemmas);
+            findPunctuation(phraseContext, tokens, tags);
+            findSubjects(phraseContext, tokens, tags, tagsForLemmas);
 
-            System.out.println(
-                    getDogbotAnswerBySentence(new PhraseContext(phrase, tokens, tags, tagsForLemmas, punctuation, subjects)));
+            // For now, an analysis of the phrase
+            System.out.println(getDogbotAnswerBySentence(phraseContext));
 
             // Big print to see what's going on with OpenMLP
-            debug(phrase, tokens, tags, tagsForLemmas, lemmas, chunks, chunksAsText, punctuation, subjects);
+            debug(phrase, tokens, tags, tagsForLemmas, lemmas, chunks, chunksAsText,
+                    phraseContext.getPunctuation(), phraseContext.getSubjects());
         }
 
         return "I'm dogbot!";
@@ -155,30 +157,38 @@ public class NLPService {
         return chunksAsText;
     }
 
-    private Punctuation findPunctuation(String[] tokens, String[] tags) {
-        return "PUNCT".equals(tags[tags.length - 1]) ?
-                Punctuation.getFromString(tokens[tokens.length - 1]) :
-                Punctuation.UNKNOWN;  // Default will be UNKNOWN
+    private void findPunctuation(PhraseContext phraseContext, String[] tokens, String[] tags) {
+        Punctuation punctuation =
+                "PUNCT".equals(tags[tags.length - 1])
+                        ? Punctuation.getFromString(tokens[tokens.length - 1])
+                        : Punctuation.UNKNOWN;  // Default will be UNKNOWN
+
+        if (!punctuation.equals(Punctuation.UNKNOWN)) {
+            phraseContext.getWorkingTokens()[phraseContext.getWorkingTokens().length - 1] = PhraseContext.TOKEN_USED;
+        }
+
+        phraseContext.setPunctuation(punctuation);
     }
 
-    private List<Subject> findSubjects(String[] tokens, String[] tags, String[] tagsForLemmas) {
-        List<Subject> subjectList = new ArrayList<>();
+    private void findSubjects(PhraseContext phraseContext, String[] tokens, String[] tags, String[] tagsForLemmas) {
+        List<Subject> subjectsList = new ArrayList<>();
         for (int i = 0; i < tagsForLemmas.length; i++) {
             // Subject pronouns
             if (tagsForLemmas[i].equals("PRP") ||
                     (tagsForLemmas[i].equals("NN") && tags[i].equals("PRON"))) {
-                subjectList.add(Subject.getFromString(tokens[i]));
+                subjectsList.add(Subject.getFromString(tokens[i]));
                 continue;
             }
             // People
             if (tagsForLemmas[i].equals("NNP") && tags[i].equals("PROPN")) {
-                subjectList.add(new Subject(tokens[i]));
+                subjectsList.add(new Subject(tokens[i]));
             }
         }
-        if (subjectList.isEmpty()) {
-            subjectList.add(Subject.NO_SUBJECT); // Default will be NO_SUBJECT
+        if (subjectsList.isEmpty()) {
+            subjectsList.add(Subject.NO_SUBJECT); // Default will be NO_SUBJECT
         }
-        return subjectList;
+
+        phraseContext.setSubjects(subjectsList);
     }
 
     private String getDogbotAnswerBySentence(PhraseContext phraseContext) {
